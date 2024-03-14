@@ -241,7 +241,7 @@ class Element(list):
                 s += elt.urdf(depth+1)
             if self.xmltext != "":
                 s +=" "*(depth+1) + self.xmltext + "\n"
-            s +=" "*depth + "</" + type(self).__name__.lower() + ">\n"
+            s +=" "*depth + "</" + name + ">\n"
         return s
 
 @six.add_metaclass(NamedElementMeta)
@@ -334,6 +334,7 @@ class Inertia(Element):
                 kwargs["iyy"]=str(args[0][3])
                 kwargs["iyz"]=str(args[0][4])
                 kwargs["izz"]=str(args[0][5])
+                args = list(args)
                 del args[0]
         super(Inertia, self).__init__(*args,**kwargs)
 
@@ -386,15 +387,18 @@ class Mass(Element):
     allowed_attributes = ['value']
 
 class Origin(Element):
-    allowed_attributes = ['xyz','rpy']
+    allowed_attributes = ['xyz', 'rpy']
     def __init__(self, *args, **kwargs):
-        if len(args) > 0 and isinstance(args[0],list):
+        if len(args) > 0 and isinstance(args[0], list):
             if len(args[0]) == 6:
-                kwargs["xyz"]=str(args[0][0])+' '+str(args[0][1])+' '+str(args[0][2])
-                kwargs["rpy"]=str(args[0][3])+' '+str(args[0][4])+' '+str(args[0][5])
+                xyz_values = args[0][:3]
+                rpy_values = args[0][3:]
+                kwargs["xyz"] = ' '.join(map(str, xyz_values))
+                kwargs["rpy"] = ' '.join(map(str, rpy_values))
+                args = list(args)  # Convert tuple to list
                 del args[0]
 
-        super(Origin, self).__init__(*args,**kwargs)
+        super(Origin, self).__init__(*args, **kwargs)
 
 class Axis(Element):
     allowed_attributes = ['xyz']
