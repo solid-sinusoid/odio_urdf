@@ -217,31 +217,38 @@ class Element(list):
     def __repr__(self):
         return self.urdf()
 
-    def urdf(self,depth=0):
+    def urdf(self, depth=0):
         name = type(self).__name__.lower()
-        if self.element_name: name = self.element_name
-        s = " "*depth + "<" + name + " "
-        if hasattr(self,'attributes'):
+        if self.element_name:
+            name = self.element_name
+        s = " " * depth + "<" + name + " "
+        if hasattr(self, 'attributes'):
             for attr in self.attributes:
-                to_insert = str(getattr(self,attr))
-                if isinstance(to_insert,tuple):
-                    to_insert = str(to_insert).strip('(').strip(')').replace(',','')
+                to_insert = str(getattr(self, attr))
+                if isinstance(to_insert, tuple):
+                    to_insert = str(to_insert).strip('(').strip(')').replace(',', '')
 
-                s+= ' '+str(attr)+'="'+eval_macros(to_insert,Element.string_macros)+'" '
-            #Flag required but unnamed attributes
+                s += ' ' + str(attr) + '="' + eval_macros(to_insert, Element.string_macros) + '" '
+            # Flag required but unnamed attributes
             for attr in set(type(self).required_attributes).difference(self.attributes):
-                s+= ' '+str(attr)+'="'+"UNNAMED_"+str(Element.element_counter)+'" '
+                s += ' ' + str(attr) + '="' + "UNNAMED_" + str(Element.element_counter) + '" '
                 Element.element_counter += 1
         if len(self) == 0 and self.xmltext == "":
-            s+= "/>\n"
+            s += "/>\n"
         else:
-            s+= ">\n"
+            s += ">"
+            # Если есть xmltext, добавляем его без пробелов перед закрывающим тегом
+            if self.xmltext != "":
+                s += self.xmltext
+            else:
+                s += "\n"
 
             for elt in self:
-                s += elt.urdf(depth+1)
+                s += elt.urdf(depth + 1)
             if self.xmltext != "":
-                s +=" "*(depth+1) + self.xmltext + "\n"
-            s +=" "*depth + "</" + name + ">\n"
+                s += "</" + name + ">\n"
+            else:
+                s += " "*depth + "</" + name + ">\n"
         return s
 
 @six.add_metaclass(NamedElementMeta)
